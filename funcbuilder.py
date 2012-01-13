@@ -2,6 +2,9 @@
     Function generator with operator calls
     Author: João Bernardo Oliveira - @jbvsmo
 
+    License: BSD
+    
+    Python 3.0+ only.
 
 [Tests]
 
@@ -62,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.3.5'
+__version__ = '1.3.6'
 __all__ = ['FuncBuilder', 'f']
 
 import operator
