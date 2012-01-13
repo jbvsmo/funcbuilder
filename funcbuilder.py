@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.3.6'
+__version__ = '1.3.7'
 __all__ = ['FuncBuilder', 'f']
 
 import operator
