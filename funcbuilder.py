@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.5.1'
+__version__ = '1.5.2'
 __all__ = ['FuncBuilder', 'f']
 
 import operator
@@ -116,6 +116,7 @@ def function_replacement(f):
     func = lambda self: (lambda x: f(self(x)), f.__name__)
     return property(function_final(func))
 
+###############################################################################
 
 class OperatorMachinery(type):
     """ Subclass of type to be used as metaclass for helping
@@ -148,7 +149,22 @@ class OperatorMachinery(type):
             setattr(self, attr.format('r', op), rfunc)
 
 
-class MetaFuncBuilder(OperatorMachinery):
+class BuiltinMachinery(type):
+    """ Create support for builtin functions as properties.
+    """
+    builtins = (abs, all, any, ascii, bin, bool, bytearray, bytes, callable,
+                chr, complex, dict, divmod, enumerate, eval, float, format,
+                frozenset, hasattr, hash, hex, id, int, iter, len, list,
+                max, min, next, oct, open, ord, print, range, repr, reversed,
+                round, set, sorted, str, sum, tuple, type, vars, zip)
+
+    def apply_builtins(self, function):
+        """ Add attributes for functions with only one argument as properties
+        """
+        for i in BuiltinMachinery.builtins:
+            setattr(self, i.__name__, function(i))
+
+class MetaFuncBuilder(OperatorMachinery, BuiltinMachinery):
     """ Add customized operators to class upon initialization and
         some builtin functions.
     """
@@ -181,17 +197,10 @@ class MetaFuncBuilder(OperatorMachinery):
                               self)
 
         self.apply_operators([func, rfunc])
+        self.apply_builtins(function_replacement)
 
-        #Add attributes for functions with only one argument as properties
-        for i in [abs, all, any, ascii, bin, bool, bytearray, bytes, callable,
-                  chr, complex, dict, divmod, enumerate, eval, float, format,
-                  frozenset, hasattr, hash, hex, id, int, iter, len, list,
-                  max, min, next, oct, open, ord, print, range, repr, reversed,
-                  round, set, sorted, str, sum, tuple, type, vars, zip]:
-            
-            setattr(self, i.__name__, function_replacement(i))
         
-#####################################################################################################
+###############################################################################
 
 class FuncBuilder(metaclass=MetaFuncBuilder):
     """ Create objects supporting almost any operation
