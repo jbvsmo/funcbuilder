@@ -260,7 +260,7 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
 f = FuncBuilder()
 
 """ TODO:
- - Fix how function, function_replacement create functions to avoid loosing
+ - Fix how function, function_replacement create functions to avoid losing
  of information on creating child objects.
 """
 
