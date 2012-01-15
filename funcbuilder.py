@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.3.7'
+__version__ = '1.3.8'
 __all__ = ['FuncBuilder', 'f']
 
 import operator
@@ -78,7 +78,7 @@ if 'callable' not in globals():
          return hasattr('__call__', x)
 
 def function(f, make_lambda=True):
-    """ Decorate methods from FuncBuilder to return a new FuncBuilde instance
+    """ Decorate methods from FuncBuilder to return a new FuncBuilder instance
         Methods must return [function, operation]
     """
     def FuncBuilderDecorator(self, *args, **kw):
@@ -100,6 +100,11 @@ def function_final(f):
 
 def function_replacement(f):
     """ Apply builtin functions to FuncBuilder object
+        as property. Those can be daisy-chained to produce
+        straigth forward function calls:
+        >>> g = f.str.call('strip').float.int ** -1
+        >>> g('  5.001e2  ')
+        0.002
     """
     func = lambda self: (lambda x: f(self(x)), f.__name__)
     return property(function_final(func))
@@ -171,6 +176,7 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
         Don't iterate a FuncBuilder object because that's really slow
         and it's a infinite iterator!
     """
+
     def __init__(self, func=None, op=None, parent=None):
         self.func = func if func else lambda x: x
         self.var_cnt = parent.var_cnt if parent else 1
@@ -194,8 +200,8 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
         return out(*args) if args else out
 
     def do(self, arg, n=None, cycle=False):
-        """ Apply function call with same argument `n` times
-            If `n` is not defined, the internal counter is used
+        """ Apply function call with same argument `n` times.
+            If `n` is not defined, the internal counter is used.
             If cycle is True, arg must be iterable and the values will
             be rotated `n` times.
 
@@ -249,7 +255,7 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
             work with this class. Use  `obj.has(x)` instead of `x in obj`
         """
         return lambda x: operator.contains(self(x), arg), ('has', arg)
-    
+
 
 f = FuncBuilder()
 
