@@ -65,17 +65,24 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.3.9'
+__version__ = '1.5.1'
 __all__ = ['FuncBuilder', 'f']
 
 import operator
 import itertools as it
 import functools
+from types import FunctionType
 
 operator.pow = pow
 if 'callable' not in globals():
      def callable(x):
          return hasattr('__call__', x)
+
+def copy_function(func):
+    """ Create a new function with the code of given function.
+        Default arguments will be lost and should be replaced when needed.
+    """
+    return FunctionType(func.__code__, globals())
 
 def function(f, make_lambda=True):
     """ Decorate methods from FuncBuilder to return a new FuncBuilder instance
@@ -101,7 +108,7 @@ def function_final(f):
 def function_replacement(f):
     """ Apply builtin functions to FuncBuilder object
         as property. Those can be daisy-chained to produce
-        straigth forward function calls:
+        straightforward function calls:
         >>> g = f.str.call('strip').float.int ** -1
         >>> g('  5.001e2  ')
         0.002
@@ -110,46 +117,70 @@ def function_replacement(f):
     return property(function_final(func))
 
 
-class MetaFuncBuilder(type):
-    """ Add customized operators to class
-        upon initialization
+class OperatorMachinery(type):
+    """ Subclass of type to be used as metaclass for helping
+        add operator support to objects
     """
-    def __init__(self, *args, **kw):
-        super().__init__(*args, **kw)
+    def apply_operators(self, funcs=None):
+        """ Add customized operators using `func` and `rfunc`
+            on the class being built. If they are not in the `funcs` argument,
+            these will be created to apply the operator on `self.operand`.
+        """
         attr = '__{0}{1}__'
 
-        #add any operator found on operator module
         for op in (x for x in dir(operator) if not x.startswith('__')):
             oper = getattr(operator, op)
             op = op.rstrip('_') #special case for keywords: and_, or_
-
-            def func(self, *n, oper=oper):
-                """ Wrapper to handle unary, binary or n-ary operations
-                    If second other operands are FuncBuilder objects, increase
-                    the var_cnt of new object.
-                """
-                name = oper.__name__
-                if n:
-                    attr = (n[0] if len(n) == 1 else n)
-                obj = type(self)(lambda x: oper(self.func(x), *n),
-                                 (name, attr) if n else name,
-                                 self)
-                if n and isinstance(n[0], type(self)):
-                    obj.var_cnt += 1
-                return obj
-
-            def rfunc(self, n, *, oper=oper):
-                """ Wrapper to handle only binary operations as
-                    second operand. Will not work with ternary operations
-                    as second operand. I.e. `pow(1, obj, 5)` won't work
-                    because of limitation of starred assignment
-                """
-                return type(self)(lambda x: oper(n, self.func(x)),
-                                  (n, oper.__name__),
-                                  self)
             
+            if not funcs:
+                def func(self, *n, oper=oper):
+                    return oper(self.operand, *n)
+                def rfunc(self, n, oper=oper):
+                    return oper(n, self.operand)
+            else:
+                """ Create copy of given function and appy the default
+                    argument for operator.
+                """
+                func, rfunc = (copy_function(i) for i in funcs)
+                func.__kwdefaults__ = rfunc.__kwdefaults__ = {'oper': oper}
+
             setattr(self, attr.format('', op), func)
             setattr(self, attr.format('r', op), rfunc)
+
+
+class MetaFuncBuilder(OperatorMachinery):
+    """ Add customized operators to class upon initialization and
+        some builtin functions.
+    """
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+
+        def func(self, *n, oper=NotImplemented):
+            """ Wrapper to handle unary, binary or n-ary operations
+                If second other operands are FuncBuilder objects, increase
+                the var_cnt of new object.
+            """
+            name = oper.__name__
+            if n:
+                attr = (n[0] if len(n) == 1 else n)
+            obj = type(self)(lambda x: oper(self.func(x), *n),
+                             (name, attr) if n else name,
+                             self)
+            if n and isinstance(n[0], type(self)):
+                obj.var_cnt += 1
+            return obj
+
+        def rfunc(self, n, *, oper=NotImplemented):
+            """ Wrapper to handle only binary operations as
+                second operand. Will not work with ternary operations
+                as second operand. I.e. `pow(1, obj, 5)` won't work
+                because of limitation of starred assignment
+            """
+            return type(self)(lambda x: oper(n, self.func(x)),
+                              (n, oper.__name__),
+                              self)
+
+        self.apply_operators([func, rfunc])
 
         #Add attributes for functions with only one argument as properties
         for i in [abs, all, any, ascii, bin, bool, bytearray, bytes, callable,
@@ -160,7 +191,7 @@ class MetaFuncBuilder(type):
             
             setattr(self, i.__name__, function_replacement(i))
         
-
+#####################################################################################################
 
 class FuncBuilder(metaclass=MetaFuncBuilder):
     """ Create objects supporting almost any operation
