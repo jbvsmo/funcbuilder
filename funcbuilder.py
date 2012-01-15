@@ -261,7 +261,7 @@ f = FuncBuilder()
 
 """ TODO:
  - Fix how function, function_replacement create functions to avoid losing
- of information on creating child objects.
+ information after creating child objects.
 """
 
 #Run doctest from module
