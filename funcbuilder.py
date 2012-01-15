@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.3.8'
+__version__ = '1.3.9'
 __all__ = ['FuncBuilder', 'f']
 
 import operator
@@ -261,7 +261,7 @@ f = FuncBuilder()
 
 """ TODO:
  - Fix how function, function_replacement create functions to avoid loosing
- of information on creating child objects
+ of information on creating child objects.
 """
 
 #Run doctest from module
