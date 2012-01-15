@@ -259,6 +259,11 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
 
 f = FuncBuilder()
 
+""" TODO:
+ - Fix how function, function_replacement create functions to avoid loosing
+ of information on creating child objects
+"""
+
 #Run doctest from module
 if __name__ == "__main__":
     import doctest
