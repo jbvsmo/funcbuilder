@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.5.5'
+__version__ = '1.5.6'
 __all__ = ['FuncBuilder', 'f', 'use']
 
 import operator
@@ -77,6 +77,28 @@ operator.pow = pow
 if 'callable' not in globals():
      def callable(x):
          return hasattr('__call__', x)
+
+def show(data):
+    """ Print the representation and return an object.
+        Can be used to see the result of some operation when the return code
+        is not available.
+
+        >>> f.str.show.int.show.float(10)
+        '10'
+        10
+        10.0
+    """
+    print(repr(data))
+    return data
+
+def show_(data):
+    """ Same as `show`, but without Python representation of the object
+    """
+    print(data)
+    return data
+
+###############################################################################
+# Function management / Decorators
 
 def copy_function(func):
     """ Create a new function with the code of given function.
@@ -104,7 +126,6 @@ def function_final(f):
     """
     return function(f, False)
 
-
 def function_replacement(f):
     """ Apply builtin functions to FuncBuilder object
         as property. Those can be daisy-chained to produce
@@ -117,6 +138,7 @@ def function_replacement(f):
     return property(function_final(func))
 
 ###############################################################################
+# Metaclasses
 
 class OperatorMachinery(type):
     """ Subclass of type to be used as metaclass for helping
@@ -150,7 +172,6 @@ class OperatorMachinery(type):
             setattr(self, attr.format('', op), func)
             setattr(self, attr.format('r', op), rfunc)
 
-
 class BuiltinMachinery(type):
     """ Create support for builtin functions as properties.
     """
@@ -158,7 +179,8 @@ class BuiltinMachinery(type):
                 chr, complex, dict, divmod, enumerate, eval, float, format,
                 frozenset, hasattr, hash, hex, id, int, iter, len, list,
                 max, min, next, oct, open, ord, print, range, repr, reversed,
-                round, set, sorted, str, sum, tuple, type, vars, zip)
+                round, set, sorted, str, sum, tuple, type, vars, zip,
+                show, show_)
 
     def apply_builtins(self, function):
         """ Add attributes for functions with only one argument as properties
@@ -203,6 +225,7 @@ class MetaFuncBuilder(OperatorMachinery, BuiltinMachinery):
 
         
 ###############################################################################
+# Working Classes
 
 class FuncBuilder(metaclass=MetaFuncBuilder):
     """ Create objects supporting almost any operation
@@ -327,7 +350,6 @@ class ApplyHelper(metaclass=OperatorMachinery):
 ApplyHelper.apply_operators()
 
 ###############################################################################
-
 # Instances
 
 f = FuncBuilder()
