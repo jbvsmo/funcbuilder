@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.5.6'
+__version__ = '1.5.7'
 __all__ = ['FuncBuilder', 'f', 'use']
 
 import operator
@@ -169,8 +169,11 @@ class OperatorMachinery(type):
                 func, rfunc = (copy_function(i) for i in funcs)
                 func.__kwdefaults__ = rfunc.__kwdefaults__ = {'oper': oper}
 
-            setattr(self, attr.format('', op), func)
-            setattr(self, attr.format('r', op), rfunc)
+            func.__name__ = attr.format('', op)
+            rfunc.__name__ = attr.format('r', op)
+
+            setattr(self, func.__name__, func)
+            setattr(self, rfunc.__name__, rfunc)
 
 class BuiltinMachinery(type):
     """ Create support for builtin functions as properties.
