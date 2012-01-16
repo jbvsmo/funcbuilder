@@ -65,8 +65,8 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.5.2'
-__all__ = ['FuncBuilder', 'f']
+__version__ = '1.5.5'
+__all__ = ['FuncBuilder', 'f', 'use']
 
 import operator
 import itertools as it
@@ -126,6 +126,8 @@ class OperatorMachinery(type):
         """ Add customized operators using `func` and `rfunc`
             on the class being built. If they are not in the `funcs` argument,
             these will be created to apply the operator on `self.operand`.
+            A new object from the same type is created and the result of this
+            operation is passed as the only argument.
         """
         attr = '__{0}{1}__'
 
@@ -135,9 +137,9 @@ class OperatorMachinery(type):
             
             if not funcs:
                 def func(self, *n, oper=oper):
-                    return oper(self.operand, *n)
+                    return type(self)(oper(self.operand, *n))
                 def rfunc(self, n, oper=oper):
-                    return oper(n, self.operand)
+                    return type(self)(oper(n, self.operand))
             else:
                 """ Create copy of given function and appy the default
                     argument for operator.
@@ -297,12 +299,40 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
         return lambda x: operator.contains(self(x), arg), ('has', arg)
 
 
-f = FuncBuilder()
+class ApplyHelper(metaclass=OperatorMachinery):
+    """ Function to work with normal objects as they were FuncBuilder objects.
+        Builtin Functions are usable as arguments.
+        To restore the result, just call the object with no arguments
+    """
+    def __init__(self, op=None):
+        self.operand = op
 
-""" TODO:
- - Fix how function, function_replacement create functions to avoid losing
- information after creating child objects.
-"""
+    def __call__(self, *data):
+        """ Generate a new object if `data` is not empty or return the value
+            held.
+        """
+        if not data:
+            return self.operand
+        return type(self)(*data)
+
+    def __getattr__(self, attr):
+        """ Apply the FuncBuilder attribute on `self.operand`
+            The same is done with the operators at the metaclass
+        """
+        return type(self)(getattr(FuncBuilder(), attr)(self.operand))
+
+    def __repr__(self):
+        return '<%s>' % self.operand
+
+ApplyHelper.apply_operators()
+
+###############################################################################
+
+# Instances
+
+f = FuncBuilder()
+use = ApplyHelper()
+
 
 #Run doctest from module
 if __name__ == "__main__":
