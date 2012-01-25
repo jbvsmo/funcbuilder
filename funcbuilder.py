@@ -65,8 +65,9 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.5.7'
-__all__ = ['FuncBuilder', 'f', 'use']
+__version__ = '1.7.5'
+__all__ = ['FuncBuilder', 'FuncOperation', 'OperatorMachinery',
+           'f', 'op', 'use']
 
 import operator
 import itertools as it
@@ -74,6 +75,10 @@ import functools
 from types import FunctionType
 
 operator.pow = pow
+
+###############################################################################
+# Functions to be wrapped
+
 if 'callable' not in globals():
      def callable(x):
          return hasattr('__call__', x)
@@ -226,6 +231,28 @@ class MetaFuncBuilder(OperatorMachinery, BuiltinMachinery):
         self.apply_operators([func, rfunc])
         self.apply_builtins(function_replacement)
 
+
+class MetaFuncOperation(OperatorMachinery):
+    """ Add operators to FuncOperation class
+    """
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+
+        def func(self, *n, oper=NotImplemented):
+            """ Wrapper to call both operands with same arguments.
+                Also works with unary operations
+            """
+            if not n:
+                obj = lambda *a, **kw: oper(self(*a, **kw))
+            else:
+                obj = lambda *a, **kw: oper(self(*a, **kw), n[0](*a, **kw))
+            return type(self)(obj)
+
+        def rfunc(self, n, *, oper=NotImplemented):
+            return type(self)(lambda *a, **kw:
+                              oper(n(*a, **kw), self(*a, **kw)))
+
+        self.apply_operators([func, rfunc])
         
 ###############################################################################
 # Working Classes
@@ -352,12 +379,47 @@ class ApplyHelper(metaclass=OperatorMachinery):
 
 ApplyHelper.apply_operators()
 
+
+class BaseCallable:
+    """ Provide a simple interface to hold a callable object
+    """
+    def __init__(self, function=None):
+        self.func = function if function is not None else lambda x: x
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+
+class FuncOperation(BaseCallable, metaclass=MetaFuncOperation):
+    """ Work with operators to build functions of functions:
+        Should be applied as decorator to some function and this function
+        will build other FuncOperation objects when with other functions or
+        FuncOperation objects
+
+        >>> g = FuncOperation(lambda x: x + 1)
+        >>> h = lambda x: x + 2
+        >>> i = g + h
+        >>> i(1)
+        5
+
+        This Object can only operate with callabe object or have unary
+        operations. This is valid:
+
+        >>> i = -g + h
+        >>> i(1)
+        1
+
+        Thought this class is not expected to work with FuncBuilder objects
+        because they should work as variables and not functions.
+    """
+    pass #all done on Meta and Base classes
+
+
 ###############################################################################
 # Instances
 
 f = FuncBuilder()
 use = ApplyHelper()
-
+fop = FuncOperation # shortcut
 
 #Run doctest from module
 if __name__ == "__main__":
