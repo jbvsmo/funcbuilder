@@ -65,9 +65,11 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.7.5'
-__all__ = ['FuncBuilder', 'FuncOperation', 'OperatorMachinery',
-           'f', 'op', 'use']
+__version__ = '1.7.6'
+__all__ = ['FuncBuilder',
+           'FuncOperation',
+           'OperatorMachinery',
+           'f', 'fop', 'use']
 
 import operator
 import itertools as it
@@ -81,7 +83,7 @@ operator.pow = pow
 
 if 'callable' not in globals():
      def callable(x):
-         return hasattr('__call__', x)
+         return hasattr(x, '__call__')
 
 def show(data):
     """ Print the representation and return an object.
@@ -409,7 +411,8 @@ class FuncOperation(BaseCallable, metaclass=MetaFuncOperation):
         1
 
         Thought this class is not expected to work with FuncBuilder objects
-        because they should work as variables and not functions.
+        as second operand, because it will treat the FuncOperation object
+        as a value.
     """
     pass #all done on Meta and Base classes
 
