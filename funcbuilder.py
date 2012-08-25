@@ -81,7 +81,7 @@ operator.pow = pow
 
 if 'callable' not in globals():
      def callable(x):
-         return hasattr('__call__', x)
+         return hasattr(x, '__call__')
 
 def show(data):
     """ Print the representation and return an object.
