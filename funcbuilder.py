@@ -74,6 +74,7 @@ __all__ = ['FuncBuilder',
 import operator
 import itertools as it
 import functools
+import collections
 from types import FunctionType
 
 operator.pow = pow
@@ -82,8 +83,8 @@ operator.pow = pow
 # Functions to be wrapped
 
 if 'callable' not in globals():
-     def callable(x):
-         return hasattr(x, '__call__')
+    def callable(x):
+        return isinstance(x, collections.Callable)
 
 def show(data):
     """ Print the representation and return an object.
@@ -354,34 +355,6 @@ class FuncBuilder(metaclass=MetaFuncBuilder):
         return lambda x: operator.contains(self(x), arg), ('has', arg)
 
 
-class ApplyHelper(metaclass=OperatorMachinery):
-    """ Function to work with normal objects as they were FuncBuilder objects.
-        Builtin Functions are usable as arguments.
-        To restore the result, just call the object with no arguments
-    """
-    def __init__(self, op=None):
-        self.operand = op
-
-    def __call__(self, *data):
-        """ Generate a new object if `data` is not empty or return the value
-            held.
-        """
-        if not data:
-            return self.operand
-        return type(self)(*data)
-
-    def __getattr__(self, attr):
-        """ Apply the FuncBuilder attribute on `self.operand`
-            The same is done with the operators at the metaclass
-        """
-        return type(self)(getattr(FuncBuilder(), attr)(self.operand))
-
-    def __repr__(self):
-        return '<%s>' % self.operand
-
-ApplyHelper.apply_operators()
-
-
 class BaseCallable:
     """ Provide a simple interface to hold a callable object
     """
@@ -421,7 +394,6 @@ class FuncOperation(BaseCallable, metaclass=MetaFuncOperation):
 # Instances
 
 f = FuncBuilder()
-use = ApplyHelper()
 fop = FuncOperation # shortcut
 
 #Run doctest from module
