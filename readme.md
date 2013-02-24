@@ -37,10 +37,10 @@ using only the `getattr` syntax, that is, the dot operator: `foo.bar`
 
 The idea is that a chain of function calls on attributes can create amazing structures
 that would never be possible inside a python *expression*. For readability, the code should
-be divided into many lines with the backslash (or using parenthesis).
+be divided into many lines with backslash (or using parenthesis).
 
 Code inside the `def_` or `Function` blocks must use `FuncBuilder` objects to avoid being
-evaluated at definition time. The `var` object is the `FuncBuilder` objecto that will provide
+evaluated at definition time. The `var` object is a `FuncBuilder` instance that will provide
 the local namespace for that to happen.
 
 ```python
@@ -89,12 +89,13 @@ be interpreted as an attribute:
 
 `set(self__x = 10)`  =>  `self.x = 10`
 
-Althought is seems interesting to write code that way, many Python statements will not be possible:
+Althought is seems "interesting" to write code that way, many Python statements will not be possible:
 
  * Cannot write `if..elif..else` blocks or `for_` loops inside `Environment` or 
    `Class` (only inside `Functions`) because of when execution happens.
  * Still not possible to have defaults for function arguments
  * Cannot put FuncBuilder objects (var.thing) inside function calls or containers!
 
- 
+ While the Wiki is not completed, reading the doctests of `funcbuilder.__init__` and the tests inside
+ `funcbuilders.py_dot` is recomended to understand how to use the module.
  
