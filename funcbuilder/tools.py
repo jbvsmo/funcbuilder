@@ -83,6 +83,3 @@ def holder(x):
     h = make_class(type(x))()
     h.__data__ = x
     return h
-
-    
-g = ApplyHelper(10) + FuncBuilder()

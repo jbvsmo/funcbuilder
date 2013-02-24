@@ -65,7 +65,7 @@ Call Method
 """
 
 __author__ = 'João Bernardo Oliveira'
-__version__ = '1.7.6'
+__version__ = '2.0'
 __all__ = ['FuncBuilder',
            'FuncOperation',
            'OperatorMachinery',
