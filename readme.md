@@ -49,15 +49,15 @@ from funcbuilder.py_dot import Environment, var
 Environment(globals())               .\
                                       \
 class_('Foo')                        .\
-	def_(__init__ = ('self', 'x'))   .\
-		set(self__x = var.x)         .\
-	end                              .\
-									  \
-	def_(__repr__ = ('self',))       .\
-		ret(var.self.x.str)          .\
-	end                              .\
-	                                  \
-	def_(foo = ('self', 'x'))        .\
+    def_(__init__ = ('self', 'x'))   .\
+        set(self__x = var.x)         .\
+    end                              .\
+                                      \
+    def_(__repr__ = ('self',))       .\
+        ret(var.self.x.str)          .\
+    end                              .\
+	                              \
+    def_(foo = ('self', 'x'))        .\
         if_(var.x)                   .\
             ret(var.x + var.self.x)  .\
         elif_(var.x == None)         .\
@@ -66,8 +66,8 @@ class_('Foo')                        .\
             ret(var.self.x)          .\
         end                          .\
     end                              .\
-	                                  \
-	def_(bar = ('self', 'y'))        .\
+	                              \
+    def_(bar = ('self', 'y'))        .\
         set(w = 0)                   .\
         for_(i = var.y)              .\
             set(w = var.w + var.i)   .\
